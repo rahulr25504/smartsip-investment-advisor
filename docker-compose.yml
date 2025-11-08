@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: smartsip-postgres
+    environment:
+      POSTGRES_DB: smartsip
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - smartsip-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: smartsip-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - smartsip-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: smartsip-zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - smartsip-network
+
+  # We'll add Kafka later in Week 4
+  # For now, just infrastructure services
+
+volumes:
+  postgres-data:
+
+networks:
+  smartsip-network:
+    driver: bridge
